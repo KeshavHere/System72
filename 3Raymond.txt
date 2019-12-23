@@ -1,0 +1,111 @@
+package dslab;
+
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.Scanner;
+
+class Node
+{
+    int Holder;
+    Queue<Integer> q;
+    Node(int h)
+    {
+        Holder = h;
+        q = new LinkedList<>();
+    }
+}
+public class ds3 {
+    static Node[] node;
+        public static void main(String[] args) {
+        Scanner s = new Scanner(System.in);
+        System.out.println("Enter number of nodes");
+        int noOfNodes = s.nextInt();
+        node = new Node[noOfNodes+1];
+        for (int i = 1; i <= noOfNodes; i++) {
+            System.out.println("Enter Holder of Node "+i);
+            node[i] = new Node(s.nextInt());
+        }
+        boolean Flag = true;
+        while(Flag)
+        {
+            printTree();
+            System.out.println("Select any one option from below: ");
+            System.out.println("1. Release Token");
+            System.out.println("2. Make a Request");
+            System.out.println("3. Exit");
+            switch(s.nextInt())
+            {
+                case 1:
+                    releaseToken();
+                    break;
+                case 2:
+                    System.out.println("Who wants to make a request");
+                    MakeRequest(s.nextInt());
+                    break;
+                case 3:
+                    Flag = false;
+                    break;
+                default:
+                    System.out.println("Wrong Option Selected enter again");                       
+            }
+        }
+    }
+    static void printTree() {
+        System.out.println("=======================");
+        for (int i = 1; i < node.length; i++) {
+            System.out.println("Details of Node "+i+" :");
+            System.out.println("Holder -> "+node[i].Holder);
+            if(node[i].Holder==i)
+                System.out.println("**Have TOKEN**");
+            System.out.println("Queue  -> "+node[i].q);        }
+        System.out.println("=======================");
+    }
+
+    static void releaseToken() {
+        int TokenAt = 1;
+        for (int i = 1; i < node.length; i++) {
+            if(node[i].Holder == i)
+            {
+                System.out.println("Token is at "+ i);
+                TokenAt = i;
+                break;
+            }
+        }
+        
+        if(node[TokenAt].q.isEmpty())
+            System.out.println("Node "+TokenAt+"has no request do simply holding the token");            
+        else
+        {
+            while(node[TokenAt].q.peek()!=TokenAt)
+            {
+                int xx = node[TokenAt].q.poll();
+                node[TokenAt].Holder = xx;
+                int prevTokenAt = TokenAt;
+                TokenAt = xx;
+                node[TokenAt].Holder = TokenAt;
+                if(!node[prevTokenAt].q.isEmpty())
+                {
+                    System.out.println("Request of Token is made by "+prevTokenAt);
+                    tempReq(prevTokenAt);
+                }
+                System.out.println("Token is at"+TokenAt);
+            }
+            node[TokenAt].q.remove();
+            System.out.println("Token is at "+TokenAt+"and is the root");
+        }
+    }
+
+    static void MakeRequest(int i) {
+        if(!node[i].q.contains(i))
+            node[i].q.add(i);
+        tempReq(i);
+    }
+
+    private static void tempReq(int i) {
+        if(node[i].Holder==i)
+            return;
+        if(!node[node[i].Holder].q.contains(i))
+            node[node[i].Holder].q.add(i);
+        tempReq(node[i].Holder);                    
+    }
+}

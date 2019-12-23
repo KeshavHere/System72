@@ -1,0 +1,221 @@
+package dslab;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Scanner;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.Vector;
+import javafx.util.Pair;
+
+public class DSLab {
+        
+    static HashMap<Integer, Integer> ComingTo = new HashMap<Integer, Integer>();
+    static HashMap<Integer, Integer> LengthOfProcess = new HashMap<Integer, Integer>();
+    static TreeMap<Integer, Integer> TimestampAT = new TreeMap<Integer, Integer>();
+    static HashMap<Integer, Set<Integer>> HappenedAfter = new HashMap<>();
+
+        public static void main(String[] args) {
+        Scanner s = new Scanner(System.in);
+        System.out.println("Enter the Number of events");
+        int NumProcess = s.nextInt();
+        
+//        List<Vector<Integer>> lv = new ArrayList<Vector<Integer>>();
+        
+        for (int i = 1; i < NumProcess+1; i++) {
+            System.out.println("Enter the length of events "+i);
+//            Vector<Integer> e = new Vector<>();
+//            lv.add(e);
+            LengthOfProcess.put(i, s.nextInt());
+            TimestampAT.put(i*10, 0);
+        }
+        
+        System.out.println("Enter total number of external event");
+        int NumArrow = s.nextInt();
+        for (int i = 0; i < NumArrow; i++) {
+            System.out.println("Event from ");
+            int from = s.nextInt();
+            System.out.println("to");            
+            int to = s.nextInt();
+            ComingTo.put(to, from);
+        }
+        
+        //before processing check for conflict
+        for(int i=1; i<=NumProcess; i++)
+        {
+            int eventNo = i*10;            
+            HashMap<Integer, Integer> maxOfLevel = new HashMap<>();
+            for(int j = eventNo+1; j<=eventNo+LengthOfProcess.get(i); j++)
+            {
+                if(ComingTo.containsKey(j))
+                {
+                    int xx = ComingTo.get(j);
+                    if(!maxOfLevel.containsKey(xx/10))
+                        maxOfLevel.put(xx/10, xx);
+                    else
+                    {
+                        if(xx<maxOfLevel.get(xx/10))
+                        {
+                            System.out.println("Conflict!! at "+ xx + " and "+ j);
+                            return;
+                        }
+                        else
+                            maxOfLevel.put(xx/10, xx);
+                    }
+                }
+            }
+        }
+        
+        
+        
+        int processed = 0;
+        while(processed<NumProcess)
+        {
+            System.out.println("Processed "+ processed);
+            for (int i = 1; i < NumProcess + 1; i++) {
+                int now = 1;
+                System.out.println("doing "+i);
+                while(now<=LengthOfProcess.get(i) && TimestampAT.containsKey(i*10 + now))
+                {
+                    now++;                    
+                }
+                if(now>LengthOfProcess.get(i)){
+                    processed++;
+                    continue;
+                }
+                now = i*10 + now;
+                // now is now
+                while(now<=LengthOfProcess.get(i)+i*10)
+                {
+                    System.out.println("now "+now);
+                    if(TimestampAT.containsKey(now))
+                        continue;
+                    int lastTimestamp = TimestampAT.get(now-1);
+                    System.out.println(lastTimestamp);
+                    System.out.println(ComingTo.containsKey(now));
+                    if(!ComingTo.containsKey(now))
+                    {
+                        System.out.print("no edge coming so ");
+                        lastTimestamp++;
+                        System.out.println(now+" "+lastTimestamp);
+                        TimestampAT.put(now, lastTimestamp);
+                        now++;
+                    }
+                    else if(TimestampAT.containsKey(ComingTo.get(now)))
+                    {
+                        System.out.print("Already done :");
+                        int thatStamp = TimestampAT.get(ComingTo.get(now));
+                        System.out.println(now + " " + ComingTo.get(now) + " value is "+ thatStamp);
+                        TimestampAT.put(now, Integer.max(lastTimestamp+1, thatStamp+1));
+                        now++;                        
+                    }
+                    else
+                        break;
+                }
+            }
+        }
+        
+        System.out.println("\n\n============TIMESTAMP===========");
+        for(Integer key: TimestampAT.keySet())
+        {
+            System.out.println(key + " -> "+ TimestampAT.get(key));
+        }
+
+        System.out.println("\n\n============Happened Before===========");        
+        for(int i=1; i<=NumProcess; i++)
+        {
+            int eventNo = i*10;            
+            for(int j = eventNo+1; j<=eventNo+LengthOfProcess.get(i); j++)
+            {
+                FindHappenings(j);
+                System.out.print(j + " -> ");
+                HappenedAfter.get(j).forEach((hehe) -> System.out.print(hehe+ ", "));                
+                System.out.println("");
+            }
+        }
+        
+        HashMap<Pair<Integer, Integer>, Boolean> printed = new HashMap<>();
+        System.out.println("\n\n============Concurrent Events===========");
+        for(int i=1; i<=NumProcess; i++)
+        {
+            int eventNo = i*10;            
+            for(int j = eventNo+1; j<=eventNo+LengthOfProcess.get(i); j++)
+            {
+                for(int ii=i; ii<=NumProcess; ii++)
+                {
+                    int eventNo1 = ii*10;            
+                    for(int jj = eventNo1+1; jj<=eventNo1+LengthOfProcess.get(ii); jj++)
+                    {
+                        if( printed.containsKey(new Pair(jj,j)) || printed.containsKey(new Pair(j,jj)))
+                                continue;
+                        if(!HappenedAfter.get(jj).contains(j))
+                            if(!HappenedAfter.get(j).contains(jj))
+                            {
+                                System.out.println(jj+", "+j);                                
+                                printed.put(new Pair(jj,j), Boolean.TRUE);
+                            }
+                    }
+                }
+            }
+        }        
+
+        HashMap<Pair<Integer, Integer>, Boolean> printed1 = new HashMap<>();
+        System.out.println("\n\n============Causally Related Events===========");
+        for(int i=1; i<=NumProcess; i++)
+        {
+            int eventNo = i*10;            
+            for(int j = eventNo+1; j<=eventNo+LengthOfProcess.get(i); j++)
+            {
+                for(int ii=i; ii<=NumProcess; ii++)
+                {
+                    int eventNo1 = ii*10;            
+                    for(int jj = eventNo1+1; jj<=eventNo1+LengthOfProcess.get(ii); jj++)
+                    {
+                        if( printed1.containsKey(new Pair(jj,j)) || printed1.containsKey(new Pair(j,jj)))
+                                continue;
+                        if(HappenedAfter.get(jj).contains(j))
+                        {
+                                System.out.println(j+" -> "+jj);                        
+                                printed1.put(new Pair(jj,j), Boolean.TRUE);                            
+                        }
+                        if(HappenedAfter.get(j).contains(jj))
+                        {
+                                System.out.println(jj+" -> "+j);                        
+                                printed1.put(new Pair(jj,j), Boolean.TRUE);                            
+                        }
+                    }
+                }
+            }
+        }        
+    }
+        
+    public static void FindHappenings(int j)
+    {
+        if(HappenedAfter.containsKey(j))
+            return;
+//        System.out.println("Processing for "+j);                
+        Set<Integer> temp3 = new HashSet<>();
+        if(ComingTo.containsKey(j))
+        {
+            int temp = ComingTo.get(j);            
+            temp3.add(temp);
+            if(!HappenedAfter.containsKey(temp))
+                FindHappenings(temp);
+            HappenedAfter.get(temp).forEach((hehe) -> temp3.add(hehe));
+        }
+        int temp = j-1;
+        while(temp%10!=0)
+        {
+            temp3.add(temp);
+            if(!HappenedAfter.containsKey(temp))
+                FindHappenings(temp);
+            HappenedAfter.get(temp).forEach((hehe) -> temp3.add(hehe));
+            temp--;
+       }
+        HappenedAfter.put(j, temp3);
+    }
+}
+

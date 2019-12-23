@@ -1,0 +1,77 @@
+Server:
+import java.rmi.*;
+import java.rmi.registry.*;
+
+public class Server
+{
+	public static void main(String[] args) throws Exception
+	{
+
+//            Naming.rebind("rmi://localhost:1900"+"/ds",obj);  */
+//            Registry reg = LocateRegistry.createRegistry(1998);
+//            reg.rebind("Server", new SearchQuery());		            		
+
+		System.out.println("Starting the server");
+		RemoteInterface obj = new ImplObj();
+		LocateRegistry.createRegistry(20000);
+
+		Naming.rebind("rmi://localhost:20000"+"/abcd",obj);
+		System.out.println("Created the server");
+	}
+}
+
+import java.rmi.*;
+
+public interface RemoteInterface extends Remote
+{
+	public String printMatrix() throws RemoteException;
+}
+
+import java.rmi.*;
+import java.rmi.server.*;
+
+public class ImplObj extends UnicastRemoteObject implements RemoteInterface
+{
+	public ImplObj() throws RemoteException
+	{
+		super();
+	}
+	public String printMatrix(Vector matrix) throws RemoteException
+	{
+		For(Vector row: v)
+{
+		For (int xx: row)
+			System.out.print(xx+” ”);
+		System.out.print(“\n”);
+}
+		return "Success";
+	}
+}
+
+
+Client
+import java.rmi.*;
+
+public class Client
+{
+	public static void main(String[] args) throws Exception
+	{
+
+            //Registry reg = LocateRegistry.getRegistry("192.168.43.246", 1998);
+            //Search access = (Search) reg.lookup("Server");
+
+		RemoteInterface obj = (RemoteInterface)Naming.lookup("rmi://192.168.43.141:20000"+"/abcd");
+		Vector<Vector<Integer>> matrix;
+		Vector<Integer> row1 = new Vector();
+		row1.add(11);
+		row1.add(12);
+		matrix.add(row1);
+		Vector<Integer> row2 = new Vector();
+		row2.add(21);
+		row2.add(22);
+		matrix.add(row2);
+		String s = obj.printMatrix(matrix);
+		System.out.println(s);
+	}
+}
+

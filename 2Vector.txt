@@ -1,0 +1,161 @@
+import java.util.ArrayList;
+import java.util.Scanner;
+
+class event
+{
+    int num;
+    int[] arr;
+    event(int a,int[] b)
+    {
+        num = a;
+        arr =b;
+    }
+}
+
+class process
+{
+    ArrayList<event> aop;
+    process(ArrayList<event> t)
+    {
+        aop = t;
+    }
+}
+
+public class ds21
+{
+    public static void main(String[] args)
+    {
+          System.out.println("Enter the number of processes");
+          Scanner sc = new Scanner(System.in);
+          int nop = sc.nextInt();
+          ArrayList<process> ofprocess = new ArrayList<>();
+          for(int i=0;i<nop;i++)
+          {
+              ArrayList<event> temp1 = new ArrayList<>();//for events
+              System.out.println("==================================================");
+              System.out.println("Enter the number of events for "+(i+1)+"th process");
+             
+              int noe = sc.nextInt();
+              //System.out.println("onto making the events");
+              for (int j = 0; j < noe; j++)
+              {
+                 //first the number name of the event
+                String s1 = Integer.toString(i+1);
+                String s2 = Integer.toString(j+1);
+                String s = s1 + s2;
+                int c = Integer.parseInt(s);
+                int[] arr = new int[nop];//i=>1,j change hora wala hai
+                for(int k = 0; k < nop; k++)
+                {
+                    if(k!=i)
+                        arr[k]=0;
+                    else
+                        arr[k] = (j+1);
+                }
+                //  System.out.println("event num "+c+" and the array is "+arr[0]+arr[1]);
+                temp1.add(new event(c,arr));
+              }
+              //print(ofprocess);
+              ofprocess.add(new process(temp1));
+          }
+          //lets print all the arrays of all events.
+          print(ofprocess);
+        System.out.println("");
+        System.out.println("");
+//okay idhar tk wo normal wala ho jaata hai!!!
+          System.out.println("==================================================================");
+         
+          System.out.println("Enter the number of external events there");
+          int noee = sc.nextInt();
+          for (int i = 0; i < noee; i++)
+          {
+              System.out.println("Enter the start of "+(i+1)+"th :");
+              int strt = sc.nextInt();
+              //now we have to find this in the all the events there.
+             
+              int[] transferthis = find(strt,ofprocess);
+              //now we have the array jiss ko tranfer krna hai... mtlb wo maximum wala hai uss k liye pehele finish le lo.
+              System.out.println("Enter the finish of the "+(i+1)+"th :");
+              int finish = sc.nextInt();
+              //get the process
+              int thisisprocess = finish/10;
+              int ii = thisisprocess-1;
+              int sizeofprocess = ofprocess.get(thisisprocess-1).aop.size();
+              //this is the process jiss m changes krne hai.
+              //find the index of the number jaha se teko krna hai -> index of finish.
+              int indexoffinsih = findindex(finish,ofprocess);
+              for (int j = indexoffinsih; j < sizeofprocess; j++)
+              {
+                    //isse change krna hai apnko => ofprocess.get(i).aop.get(j).arr;
+                   ofprocess.get(ii).aop.get(j).arr =  returnmax(ofprocess.get(ii).aop.get(j).arr,transferthis);
+              }
+             
+          }
+          System.out.println("The final answer is => ==============================");
+          print(ofprocess);
+         
+         
+    }
+
+    private static void print(ArrayList<process> ofprocess)
+    {
+        for (int i = 0; i < ofprocess.size(); i++)
+        {
+            System.out.println("Priting for the : "+(i+1)+"th process");
+            process temp = ofprocess.get(i);
+            for (int j = 0; j < temp.aop.size(); j++)
+            {
+                System.out.print("event "+temp.aop.get(j).num+"");
+                System.out.println("event array => "+temp.aop.get(j).arr[0]+", "+temp.aop.get(j).arr[1]+", "+temp.aop.get(j).arr[2]+"");
+            }
+        }
+       
+    }
+
+    private static int[] find(int strt, ArrayList<process> ofprocess)
+    {
+         for (int i = 0; i < ofprocess.size(); i++)
+        {
+            process temp = ofprocess.get(i);
+            for (int j = 0; j < temp.aop.size(); j++)
+            {
+                    if(temp.aop.get(j).num==strt)
+                    {
+                        return  temp.aop.get(j).arr;
+                    }
+            }
+        }  
+        return null;
+       
+    }
+   
+   
+    private static int findindex(int strt, ArrayList<process> ofprocess)
+    {
+       
+            int i = strt/10-1;
+            process temp = ofprocess.get(i);
+            for (int j = 0; j < temp.aop.size(); j++)
+            {
+                    if(temp.aop.get(j).num==strt)
+                    {
+                        return  j;
+                    }
+            }
+       
+        return -1;
+       
+    }
+
+    private static int[] returnmax(int[] arr, int[] transferthis) {
+   
+        int[] temp = new int[arr.length];
+
+        for(int i=0;i<arr.length;i++)
+        {
+            temp[i] = Math.max(arr[i], transferthis[i]);
+        }
+        return temp;
+   
+    }
+}
